@@ -65,6 +65,15 @@ const App = () => {
     }
   }, [matches, gameCards.length]);
 
+  const handleRetry = () => {
+    setGameCards(shuffleCards(createGameCards()));
+    setFlippedCards([]);
+    setMoves(0);
+    setMatches(0);
+    setGameOver(false);
+    setLocked(false);
+  };
+
   const totalPairs = gameCards.length / 2;
   const finalScore =
     moves === 0 ? 0 : Math.max(0, Math.round((totalPairs / moves) * 100));
@@ -84,6 +93,7 @@ const App = () => {
         toggleModal={setGameOver}
         score={finalScore}
         emoji={emoji}
+        onRetry={handleRetry}
       />
     </div>
   );

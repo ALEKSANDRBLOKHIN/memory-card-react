@@ -5,24 +5,33 @@ export type TModalProps = {
   toggleModal: React.Dispatch<React.SetStateAction<boolean>>;
   score: number;
   emoji: string;
+  onRetry: () => void;
 };
 
-const ModalComp = ({ showModal, toggleModal, score, emoji }: TModalProps) => {
+const ModalComp = ({
+  showModal,
+  toggleModal,
+  score,
+  emoji,
+  onRetry,
+}: TModalProps) => {
   return (
     <section
       className={styles.final_result}
       style={{ visibility: showModal ? "visible" : "hidden" }}
     >
-      <button onClick={() => toggleModal(false)} className={styles.final_btn}>X</button>
+      <button onClick={() => toggleModal(false)} className={styles.final_btn}>
+        X
+      </button>
       <div className={styles.final_container}>
         <h2>Final Score</h2>
         <span className={styles.final_score}>{score}</span>
         <span className={styles.final_icon + " final_icon animate__delay-1s"}>
           {emoji}
         </span>
-        <span onClick={() => toggleModal(false)} className={styles.final_text}>
-          Click to start again
-        </span>
+        <button onClick={onRetry} className={styles.retry_btn}>
+          🔁 Retry Game
+        </button>
       </div>
     </section>
   );

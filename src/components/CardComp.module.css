@@ -1,5 +1,4 @@
 .card {
-    max-width: 240px;
     aspect-ratio: 9/13;
     background-color: var(--primary);
     border: 1px solid var(--primary-alt);
@@ -12,6 +11,7 @@
     position: relative;
     transition: all 260ms ease-in-out;
     color: var(--contrast);
+    /* background-image: url("../assets/capitain.jpg"); */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

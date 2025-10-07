@@ -1,105 +1,73 @@
-import { useEffect, useState } from "react"
-import CardComp from "./components/CardComp"
-import cards from "./data/cards.json"
-import type { TCard, TCardList } from "./types/card.types"
-import ModalComp from "./components/ModalComp"
+import { useEffect, useState } from "react";
+import CardComp from "./components/CardComp";
+import cards from "./data/cards.json";
+import type { TCard, TCardList } from "./types/card.types";
+import ModalComp from "./components/ModalComp";
+
+
+const createGameCards = (): TCardList =>
+  cards.flatMap(c => ([
+    { ...c, id: c.id,     flipped: false, matched: false },
+    { ...c, id: c.id + 100, flipped: false, matched: false },
+  ]));
+
+const shuffleCards = (arr: TCardList): TCardList =>
+  [...arr].sort(() => Math.random() - 0.5);
 
 const App = () => {
-	// Create pairs of cards
-	const createGameCards = (): TCardList => {
-		const pairs = cards.flatMap((card) => [
-			{ ...card, id: card.id },
-			{ ...card, id: card.id + 100 },
-		])
-		return pairs
-	}
+  const [gameCards, setGameCards] = useState<TCardList>(shuffleCards(createGameCards()));
+  const [flippedCards, setFlippedCards] = useState<TCard["name"][]>([]);
+  const [moves, setMoves] = useState(0);
+  const [matches, setMatches] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
 
-	// Shuffle cards
-	const shuffleCards = (cards: TCardList): TCardList => {
-		return cards.sort(() => Math.random() - 0.5)
-	}
+  const handleCardClick = (clicked: TCard) => {
+    if (clicked.matched || clicked.flipped) return;     // защита
+    if (flippedCards.length === 2) return;
 
-	// Game cards state
-	const [gameCards, setGameCards] = useState<TCardList>(
-		createGameCards() // shuffled cards
-	)
-	// flipped cards with an array of cards names
-	const [flippedCards, setFlippedCards] = useState<TCard["name"][]>([])
+    setGameCards(prev =>
+      prev.map(c => (c.id === clicked.id ? { ...c, flipped: true } : c))
+    );
+    setFlippedCards(prev => [...prev, clicked.name]);
+  };
 
-	// number of moves
-	const [moves, setMoves] = useState(0)
 
-	// number of matches
-	const [matches, setMatches] = useState(0)
+  useEffect(() => {
+    if (flippedCards.length !== 2) return;
+    const [a, b] = flippedCards;
+    setMoves(p => p + 1);
 
-	// game state
-	const [gameOver, setGameOver] = useState(true)
+    if (a === b) {
+      setMatches(p => p + 1);
+      setGameCards(prev => prev.map(c => (c.name === a ? { ...c, matched: true } : c)));
+      setFlippedCards([]);
+    } else {
+      setTimeout(() => {
+        setGameCards(prev =>
+          prev.map(c => (c.name === a || c.name === b) ? { ...c, flipped: false } : c)
+        );
+        setFlippedCards([]);
+      }, 1000);
+    }
+  }, [flippedCards]);
 
-	const handleCardClick = (clickedCard: TCard) => {
-		// Check if the card is already matched
-		if (clickedCard.matched) return
-		// Check if we have have 2 cards flipped already
-		if (flippedCards.length === 2) return
 
-		// Flip the card
-		setGameCards((prev) =>
-			prev.map((card) =>
-				card.id === clickedCard.id ? { ...card, flipped: !card.flipped } : card
-			)
-		)
-		setFlippedCards((prev) => [...prev, clickedCard["name"]])
-	}
+  useEffect(() => {
+    if (gameCards.length && matches === gameCards.length / 2) setGameOver(true);
+  }, [matches, gameCards.length]);
 
-	useEffect(() => {
-		if (flippedCards.length === 2) {
-			setMoves((prev) => prev + 1)
-			// Check if the flipped cards match
-			const [firstCard, secondCard] = flippedCards
-			if (firstCard === secondCard) {
-				// Increment the number of matches
-				setMatches((prev) => prev + 1)
-				setFlippedCards([]) // empty the flipped cards array
-				// set the matched cards to true
-				setGameCards((prev) =>
-					prev.map((card) =>
-						card.name === firstCard ? { ...card, matched: true } : card
-					)
-				)
-			} else {
-				// Flip the cards back
-				setTimeout(() => {
-					setGameCards((prev) =>
-						prev.map((card) =>
-							// find the cards to flip back to avoid flipping all of them
-							flippedCards.some((fc) => fc === card.name)
-								? { ...card, flipped: false }
-								: card
-						)
-					)
-					setFlippedCards([]) // empty the flipped cards array
-				}, 1000)
-			}
-		}
-		// end of the game
-		if (matches === gameCards.length / 2) {
-			setGameOver(true)
-		}
-	}, [flippedCards])
+  return (
+    <div className="main_section">
+      <h1>Memory Game</h1>
+      <p>Number of moves: {moves}</p>
+      <div className="card_container">
+        {gameCards.map((card: TCard) => (
+          <CardComp key={card.id} card={card} clickProp={handleCardClick} />
+        ))}
+      </div>
+      <ModalComp showModal={gameOver} toggleModal={setGameOver} />
+    </div>
+  );
+};
 
-	return (
-		<div className="main_section">
-			<h1>Memory Game</h1>
-			<p>Number of moves: {moves}</p>
-			<div className="card_container">
-				{gameCards.map((card: TCard) => {
-					return (
-						<CardComp card={card} clickProp={handleCardClick} key={card.id} />
-					)
-				})}
-			</div>
-			<ModalComp showModal={gameOver} toggleModal={setGameOver} />
-		</div>
-	)
-}
-
-export default App
+export default App;

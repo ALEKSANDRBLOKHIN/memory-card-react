@@ -65,6 +65,11 @@ const App = () => {
     }
   }, [matches, gameCards.length]);
 
+  const totalPairs = gameCards.length / 2;
+  const finalScore =
+    moves === 0 ? 0 : Math.max(0, Math.round((totalPairs / moves) * 100));
+  const emoji = finalScore > 80 ? "🎉" : finalScore > 50 ? "🙂" : "😅";
+
   return (
     <div className="main_section">
       <h1>Memory Game</h1>
@@ -74,7 +79,12 @@ const App = () => {
           <CardComp key={card.id} card={card} clickProp={handleCardClick} />
         ))}
       </div>
-      <ModalComp showModal={gameOver} toggleModal={setGameOver} />
+      <ModalComp
+        showModal={gameOver}
+        toggleModal={setGameOver}
+        score={finalScore}
+        emoji={emoji}
+      />
     </div>
   );
 };
